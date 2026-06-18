@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- net9.0 -> Umbraco 15/16, net10.0 -> Umbraco 17 -->
+		<TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<WarningsAsErrors>Nullable</WarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>Lait.Umbraco.Search.Typesense</PackageId>
+		<Title>Umbraco Typesense Search</Title>
+		<Description>An extension for Umbraco CMS providing a custom search engine integration with Typesense.</Description>
+		<Version>1.4.5</Version>
+		<Authors>Morten Nørrehus</Authors>
+		<Company>Lait.dk</Company>
+		<PackageTags>Umbraco;Umbraco-Marketplace;Typesense;Search</PackageTags>
+		<PackageIcon>typesense.png</PackageIcon>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Typesense" Version="8.3.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[15.0.0,17.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[15.0.0,17.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Api.Management" Version="[15.0.0,17.0.0)" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[17.0.0,18.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[17.0.0,18.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Api.Management" Version="[17.0.0,18.0.0)" />
+	</ItemGroup>
+
+	<!-- Built backoffice client assets (produced by `npm run build` in Client/) -->
+	<ItemGroup>
+		<Content Include="App_Plugins\Lait.Umbraco.Search.Typesense\**\*.*">
+			<Pack>true</Pack>
+			<PackagePath>App_Plugins\Lait.Umbraco.Search.Typesense\</PackagePath>
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Content>
+		<Content Include="App_Plugins\**\*.*">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="typesense.png">
+			<Pack>true</Pack>
+			<PackagePath>\</PackagePath>
+		</Content>
+		<None Include="readme.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<!-- buildTransitive .targets copies App_Plugins into the consuming project (SDK projects ignore content/contentFiles) -->
+	<ItemGroup>
+		<None Include="build\**\*.*">
+			<Pack>true</Pack>
+			<PackagePath>buildTransitive</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<!-- Do not include the TypeScript client sources or node_modules in the build/output -->
+	<ItemGroup>
+		<Compile Remove="Client\**\*.cs" />
+		<Content Remove="Client\**\*.*" />
+		<None Remove="Client\**\*.*" />
+	</ItemGroup>
+
+</Project>

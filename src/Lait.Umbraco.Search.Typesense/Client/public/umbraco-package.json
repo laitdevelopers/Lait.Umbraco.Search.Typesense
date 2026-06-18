@@ -1,0 +1,25 @@
+{
+  "$schema": "../../umbraco-package-schema.json",
+  "name": "Umbraco.Cms.Integrations.Search.Typesense",
+  "version": "1.0.0",
+  "extensions": [
+    {
+      "type": "dashboard",
+      "alias": "Umb.Integrations.Search.Typesense.Dashboard",
+      "name": "Typesense Search Dashboard",
+      "element": "/App_Plugins/Lait.Umbraco.Search.Typesense/typesense.js",
+      "elementName": "typesense-search-dashboard",
+      "weight": 100,
+      "meta": {
+        "label": "Typesense Search",
+        "pathname": "typesense-search"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Settings"
+        }
+      ]
+    }
+  ]
+}

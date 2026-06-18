@@ -1,0 +1,33 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<!--
+		Copies the packed backoffice client assets (App_Plugins) into the consuming project so the
+		new-backoffice extension manifest (umbraco-package.json) and bundle are served at runtime.
+		SDK-style projects ignore NuGet content/contentFiles, so this targets file (imported from
+		buildTransitive) performs the copy at build time. NOTE: the file name MUST match the PackageId
+		for NuGet to auto-import it.
+	-->
+	<PropertyGroup>
+		<TypesenseClientFilesPath>$(MSBuildThisFileDirectory)..\App_Plugins\Lait.Umbraco.Search.Typesense\**\*.*</TypesenseClientFilesPath>
+		<TypesenseClientDestinationPath>$(MSBuildProjectDirectory)\App_Plugins\Lait.Umbraco.Search.Typesense\</TypesenseClientDestinationPath>
+	</PropertyGroup>
+
+	<Target Name="CopyTypesenseClientAssets" BeforeTargets="Build;Publish">
+		<ItemGroup>
+			<TypesenseClientFiles Include="$(TypesenseClientFilesPath)" />
+		</ItemGroup>
+		<Message
+			Text="Copying Typesense backoffice assets to App_Plugins (@(TypesenseClientFiles->Count()) files)"
+			Importance="high" />
+		<Copy SourceFiles="@(TypesenseClientFiles)"
+		      DestinationFiles="@(TypesenseClientFiles->'$(TypesenseClientDestinationPath)%(RecursiveDir)%(Filename)%(Extension)')"
+		      SkipUnchangedFiles="true" />
+	</Target>
+
+	<Target Name="ClearTypesenseClientAssets" BeforeTargets="Clean">
+		<ItemGroup>
+			<TypesenseClientDir Include="$(TypesenseClientDestinationPath)" />
+		</ItemGroup>
+		<Message Text="Removing Typesense backoffice assets from App_Plugins" Importance="high" />
+		<RemoveDir Directories="@(TypesenseClientDir)" />
+	</Target>
+</Project>

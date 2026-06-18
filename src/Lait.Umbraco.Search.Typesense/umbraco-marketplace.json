@@ -1,0 +1,11 @@
+{
+  "AuthorDetails": {
+    "Description": "Morten Nørrehus",
+    "Url": "https://lait.dk/"
+  },
+  "Category": "Search",
+  "LicenseType": "Free",
+  "PackageType": "Integration",
+  "Tags": [],
+  "Title": "Typesense"
+}

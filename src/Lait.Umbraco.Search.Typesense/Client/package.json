@@ -1,0 +1,15 @@
+{
+  "name": "umbraco-cms-integrations-search-typesense",
+  "version": "1.0.0",
+  "description": "Backoffice client for the Umbraco Typesense Search integration.",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch"
+  },
+  "devDependencies": {
+    "@umbraco-cms/backoffice": "^15.0.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0"
+  }
+}

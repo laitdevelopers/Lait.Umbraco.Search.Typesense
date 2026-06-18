@@ -1,0 +1,41 @@
+using Umbraco.Cms.Core.Cache;
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Notifications;
+using Umbraco.Cms.Core.Services.Changes;
+using Umbraco.Cms.Core.Sync;
+using Umbraco.Extensions;
+
+namespace Umbraco.Cms.Integrations.Search.Typesense.Handlers
+{
+    public class TypesenseContentPublishedHandler : INotificationAsyncHandler<ContentPublishedNotification>
+    {
+        private readonly IServerRoleAccessor _serverRoleAccessor;
+
+        private readonly DistributedCache _distributedCache;
+
+        public TypesenseContentPublishedHandler(
+            IServerRoleAccessor serverRoleAccessor,
+            DistributedCache distributedCache)
+        {
+            _serverRoleAccessor = serverRoleAccessor;
+            _distributedCache = distributedCache;
+        }
+
+        public Task HandleAsync(ContentPublishedNotification notification, CancellationToken cancellationToken)
+        {
+            if (_serverRoleAccessor.CurrentServerRole != ServerRole.SchedulingPublisher
+                && _serverRoleAccessor.CurrentServerRole != ServerRole.Single)
+            {
+                return Task.CompletedTask;
+            }
+
+            var changes = notification.PublishedEntities
+                .Select(entity => new TreeChange<IContent>(entity, TreeChangeTypes.RefreshNode));
+
+            _distributedCache.RefreshContentCache(changes);
+
+            return Task.CompletedTask;
+        }
+    }
+}
