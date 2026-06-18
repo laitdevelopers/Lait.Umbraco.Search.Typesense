@@ -7,6 +7,6 @@
   "Category": "Search",
   "LicenseType": "Free",
   "PackageType": "Integration",
-  "Tags": ["Typesense", "search"],
-  "Title": "Typesense"
+  "Tags": ["Typesense", "Search"],
+  "Title": "Umbraco Typesense Search"
 }
