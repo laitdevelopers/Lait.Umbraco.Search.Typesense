@@ -1,11 +1,12 @@
 {
   "AuthorDetails": {
     "Description": "Morten Nørrehus",
-    "Url": "https://lait.dk/"
+    "Url": "https://lait.dk/",
+    "ImageUrl": "https://raw.githubusercontent.com/laitdevelopers/Lait.Umbraco.Search.Typesense/icon.png"
   },
   "Category": "Search",
   "LicenseType": "Free",
   "PackageType": "Integration",
-  "Tags": [],
+  "Tags": ["Typesense", "search"],
   "Title": "Typesense"
 }

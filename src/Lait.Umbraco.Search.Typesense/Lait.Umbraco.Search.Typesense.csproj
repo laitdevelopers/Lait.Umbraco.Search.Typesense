@@ -11,7 +11,7 @@
 		<PackageId>Lait.Umbraco.Search.Typesense</PackageId>
 		<Title>Umbraco Typesense Search</Title>
 		<Description>An extension for Umbraco CMS providing a custom search engine integration with Typesense.</Description>
-		<Version>1.4.7</Version>
+		<Version>1.4.8</Version>
 		<Authors>Morten Nørrehus</Authors>
 		<Company>Lait.dk</Company>
 		<PackageProjectUrl>https://github.com/laitdevelopers/Lait.Umbraco.Search.Typesense</PackageProjectUrl>
