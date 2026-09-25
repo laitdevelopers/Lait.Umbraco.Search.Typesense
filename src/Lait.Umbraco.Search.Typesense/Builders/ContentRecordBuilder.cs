@@ -77,28 +77,27 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Builders
             {
                 foreach (var culture in content.PublishedCultures)
                 {
-                    _record.Data.Add($"name-{culture}", content.CultureInfos[culture].Name);
-                    _record.Data.Add($"url-{culture}", _urlProvider.GetUrl(content.Key, culture: culture));
+                    _record.Data[$"name-{culture}"] = content.CultureInfos[culture].Name;
+                    _record.Data[$"url-{culture}"] = _urlProvider.GetUrl(content.Key, culture: culture);
                 }
             }
 
+            // Assigned through the indexer rather than Add(): a selected property whose alias
+            // collides with one of the culture keys above would otherwise throw.
             foreach (var property in content.Properties.Where(filter ?? (p => true)))
             {
-                if (!_record.Data.ContainsKey(property.Alias))
+                if (property.PropertyType.VariesByCulture())
                 {
-                    if (property.PropertyType.VariesByCulture())
+                    foreach (var culture in content.PublishedCultures)
                     {
-                        foreach (var culture in content.PublishedCultures)
-                        {
-                            var indexValue = _propertyIndexValueFactory.GetValue(property, culture);
-                            _record.Data.Add($"{indexValue.Key}-{culture}", indexValue.Value);
-                        }
+                        var indexValue = _propertyIndexValueFactory.GetValue(property, culture);
+                        _record.Data[$"{indexValue.Key}-{culture}"] = indexValue.Value;
                     }
-                    else
-                    {
-                        var indexValue = _propertyIndexValueFactory.GetValue(property, null);
-                        _record.Data.Add(indexValue.Key, indexValue.Value);
-                    }
+                }
+                else
+                {
+                    var indexValue = _propertyIndexValueFactory.GetValue(property, null);
+                    _record.Data[indexValue.Key] = indexValue.Value;
                 }
             }
 

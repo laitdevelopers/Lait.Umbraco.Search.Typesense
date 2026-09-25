@@ -88,27 +88,42 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Models
             {
                 ["id"] = Id,
                 ["contentId"] = ContentId,
-                ["name"] = Name,
-                ["createDate"] = CreateDate,
                 ["createDateTimestamp"] = CreateDateTimestamp,
-                ["creatorName"] = CreatorName,
-                ["updateDate"] = UpdateDate,
                 ["updateDateTimestamp"] = UpdateDateTimestamp,
-                ["writerName"] = WriterName,
                 ["templateId"] = TemplateId,
-                ["level"] = Level,
-                ["path"] = Path,
-                ["contentTypeAlias"] = ContentTypeAlias,
-                ["url"] = Url
+                ["level"] = Level
             };
+
+            // Null values are left out rather than sent as JSON null: every field in the collection
+            // schema is optional, and Typesense rejects the whole document when a typed field
+            // arrives as null (an unpublished node, for instance, has no url and no writer).
+            AddIfNotNull(document, "name", Name);
+            AddIfNotNull(document, "createDate", CreateDate);
+            AddIfNotNull(document, "creatorName", CreatorName);
+            AddIfNotNull(document, "updateDate", UpdateDate);
+            AddIfNotNull(document, "writerName", WriterName);
+            AddIfNotNull(document, "path", Path);
+            AddIfNotNull(document, "contentTypeAlias", ContentTypeAlias);
+            AddIfNotNull(document, "url", Url);
 
             if (GeolocationData != null && GeolocationData.Count > 0)
                 document["_geoloc"] = GeolocationData;
 
             foreach (var item in Data)
-                document[item.Key] = item.Value;
+            {
+                if (item.Key == null) continue;
+
+                AddIfNotNull(document, item.Key, item.Value);
+            }
 
             return document;
+        }
+
+        private static void AddIfNotNull(Dictionary<string, object> document, string key, object value)
+        {
+            if (value == null) return;
+
+            document[key] = value;
         }
     }
 }

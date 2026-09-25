@@ -11,6 +11,7 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Models
         public IEnumerable<ContentEntity> Properties { get; set; }
 
         [JsonPropertyName("propertiesDescription")]
-        public IEnumerable<string> PropertiesDescription => Properties.Select(p => p.Name);
+        public IEnumerable<string> PropertiesDescription =>
+            Properties?.Select(p => p?.Name) ?? Enumerable.Empty<string>();
     }
 }

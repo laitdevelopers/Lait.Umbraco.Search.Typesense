@@ -29,15 +29,13 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Services
 
         public virtual KeyValuePair<string, object> GetValue(IProperty property, string culture)
         {
-            var availableCultures = _languageService.GetAllAsync().GetAwaiter().GetResult()
-                .Select(p => p.IsoCode);
-            IDictionary<Guid, IContentType> contentTypeDictionary = _contentTypeService.GetAll().ToDictionary(x => x.Key);
-
             var propertyEditor = _propertyEditorsCollection
                 .FirstOrDefault(p => p.Alias == property.PropertyType.PropertyEditorAlias);
             if (propertyEditor == null)
             {
-                return default;
+                // No editor to read the value with. Return an empty value rather than a default
+                // KeyValuePair, whose null key would throw when added to the record's data.
+                return new KeyValuePair<string, object>(property.Alias, new List<string>());
             }
 
             var converter = _converterCollection
@@ -48,6 +46,10 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Services
                 return new KeyValuePair<string, object>(property.Alias, result);
             }
 
+            var availableCultures = _languageService.GetAllAsync().GetAwaiter().GetResult()
+                .Select(p => p.IsoCode);
+            IDictionary<Guid, IContentType> contentTypeDictionary = _contentTypeService.GetAll().ToDictionary(x => x.Key);
+
             IEnumerable<IndexValue> indexValues =
                 propertyEditor.PropertyIndexValueFactory.GetIndexValues(
                     property,
@@ -57,12 +59,34 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Services
                     availableCultures,
                     contentTypeDictionary);
 
-            if (indexValues == null || !indexValues.Any())
-                return new KeyValuePair<string, object>(property.Alias, string.Empty);
+            return new KeyValuePair<string, object>(property.Alias, Flatten(indexValues));
+        }
 
-            var indexValue = indexValues.First();
+        /// <summary>
+        /// Flattens an editor's index values into a list of strings.
+        /// </summary>
+        /// <remarks>
+        /// The shape matters: collections declare these fields as "string[]", and Typesense rejects
+        /// the whole document if a field arrives as anything else. The previous implementation
+        /// returned the raw <see cref="IndexValue.Values"/> when the editor produced something and a
+        /// bare empty string when it did not, so an empty property produced either <c>[null]</c> or
+        /// <c>""</c> where the field was declared as an array of strings. Nulls and blanks are
+        /// dropped, leaving an empty array, which Typesense accepts.
+        /// </remarks>
+        private static List<string> Flatten(IEnumerable<IndexValue> indexValues)
+        {
+            var values = new List<string>();
 
-            return new KeyValuePair<string, object>(property.Alias, indexValue.Values);
+            var indexValue = indexValues?.FirstOrDefault();
+            if (indexValue?.Values == null) return values;
+
+            foreach (var value in indexValue.Values)
+            {
+                var text = value?.ToString();
+                if (!string.IsNullOrWhiteSpace(text)) values.Add(text);
+            }
+
+            return values;
         }
     }
 }

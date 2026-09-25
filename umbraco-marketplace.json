@@ -2,7 +2,7 @@
   "AuthorDetails": {
     "Description": "Morten Nørrehus",
     "Url": "https://lait.dk/",
-    "ImageUrl": "https://raw.githubusercontent.com/laitdevelopers/Lait.Umbraco.Search.Typesense/icon.png"
+    "ImageUrl": "https://raw.githubusercontent.com/laitdevelopers/Lait.Umbraco.Search.Typesense/master/src/Lait.Umbraco.Search.Typesense/icon.png"
   },
   "Category": "Search",
   "LicenseType": "Free",

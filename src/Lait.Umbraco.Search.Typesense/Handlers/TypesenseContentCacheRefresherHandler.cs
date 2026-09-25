@@ -108,9 +108,11 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Handlers
                 {
                     foreach (var index in indices)
                     {
-                        var indexConfiguration = JsonSerializer.Deserialize<List<ContentData>>(index.SerializedData)
-                            .FirstOrDefault(p => p.ContentType.Alias == entity.ContentType.Alias);
-                        if (indexConfiguration == null || indexConfiguration.ContentType.Alias != entity.ContentType.Alias) continue;
+                        var indexContentData = JsonSerializer.Deserialize<List<ContentData>>(index.SerializedData);
+
+                        var indexConfiguration = indexContentData?
+                            .FirstOrDefault(p => p.ContentType?.Alias == entity.ContentType.Alias);
+                        if (indexConfiguration?.ContentType == null) continue;
 
                         var record = new ContentRecordBuilder(
                                 _userService,
@@ -124,7 +126,7 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Handlers
 
                         var result = entity.Trashed || !entity.Published
                             ? await _indexService.DeleteData(index.Name, entity.Key.ToString())
-                            : await _indexService.UpdateData(index.Name, record);
+                            : await _indexService.UpdateData(index.Name, record, indexContentData);
 
                         if (result.Failure)
                             _logger.LogError("Failed to update data for Typesense index: {Error}", result.Error);

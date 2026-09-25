@@ -1,3 +1,5 @@
+using global::Typesense;
+
 using System.Text.Json;
 
 using Umbraco.Cms.Core.Models;
@@ -8,7 +10,7 @@ using Umbraco.Extensions;
 
 namespace Umbraco.Cms.Integrations.Search.Typesense.Converters
 {
-    public class UmbracoMediaPickerConverter : ITypesenseIndexValueConverter
+    public class UmbracoMediaPickerConverter : ITypesenseIndexValueConverter, ITypesenseFieldTypeProvider
     {
         private const string UdiPrefix = "umb://media/";
 
@@ -59,5 +61,7 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Converters
 
             return list;
         }
+
+        public FieldType GetFieldType() => FieldType.StringArray;
     }
 }

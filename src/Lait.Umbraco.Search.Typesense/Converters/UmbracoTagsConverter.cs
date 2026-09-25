@@ -1,3 +1,5 @@
+using global::Typesense;
+
 using System.Text.Json;
 
 using Umbraco.Cms.Core.Models;
@@ -5,7 +7,7 @@ using Umbraco.Cms.Integrations.Search.Typesense.Extensions;
 
 namespace Umbraco.Cms.Integrations.Search.Typesense.Converters
 {
-    public class UmbracoTagsConverter : ITypesenseIndexValueConverter
+    public class UmbracoTagsConverter : ITypesenseIndexValueConverter, ITypesenseFieldTypeProvider
     {
         public string Name => Core.Constants.PropertyEditors.Aliases.Tags;
 
@@ -35,5 +37,7 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Converters
 
             return Enumerable.Empty<string>();
         }
+
+        public FieldType GetFieldType() => FieldType.StringArray;
     }
 }

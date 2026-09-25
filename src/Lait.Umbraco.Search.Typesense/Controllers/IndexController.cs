@@ -102,9 +102,8 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Controllers
                     Date = DateTime.Now
                 });
 
-                var result = await _indexService.IndexExists(index.Name)
-                    ? Result.Ok()
-                    : await _indexService.PushData(index.Name);
+                // Creates the collection, or adds the fields a previously saved definition lacked.
+                var result = await _indexService.PushData(index.Name, null, index.ContentData);
 
                 return Ok(result);
             }
@@ -136,7 +135,9 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Controllers
                     _logger.LogInformation("Building Typesense index for {ContentType} with {Count} items",
                         contentDataItem.ContentType.Alias, contentItems.Count());
 
-                    foreach (var contentItem in contentItems.Where(p => !p.Trashed))
+                    // Unpublished nodes are read back as null for every property, so they would
+                    // only contribute empty documents to a published-content index.
+                    foreach (var contentItem in contentItems.Where(p => !p.Trashed && p.Published))
                     {
                         var record = new ContentRecordBuilder(
                                 _userService,
@@ -152,7 +153,7 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Controllers
                     }
                 }
 
-                var result = await _indexService.PushData(index.Name, payload);
+                var result = await _indexService.PushData(index.Name, payload, indexContentData);
 
                 return Ok(result);
             }
@@ -189,7 +190,7 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Controllers
             var index = _indexStorage.GetById(indexId);
             if (index == null) return NotFound();
 
-            var queryBy = BuildQueryBy(index.SerializedData);
+            var queryBy = BuildQueryBy(index.SerializedData, await _indexService.GetQueryableFields(index.Name));
 
             var searchResults = await _searchService.SearchAsync(index.Name, query, queryBy, page, perPage);
 
@@ -208,9 +209,11 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Controllers
 
         /// <summary>
         /// Typesense search requires a "query_by" list. Build it from "name" plus every selected
-        /// property alias in the index definition.
+        /// property alias in the index definition, keeping only the fields the collection actually
+        /// declares as string or string[]: Typesense refuses a query_by naming an unknown field, and
+        /// equally one naming a numeric or boolean field.
         /// </summary>
-        private static string BuildQueryBy(string serializedData)
+        private static string BuildQueryBy(string serializedData, IReadOnlyCollection<string> queryableFields)
         {
             var aliases = new List<string> { "name" };
 
@@ -222,7 +225,17 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Controllers
                     .SelectMany(c => c.Properties.Select(p => p.Alias)));
             }
 
-            return string.Join(",", aliases.Distinct());
+            var queryable = new HashSet<string>(queryableFields ?? Array.Empty<string>(), StringComparer.Ordinal);
+
+            // Culture-varying properties are indexed as "{alias}-{culture}".
+            var selected = aliases
+                .Distinct()
+                .SelectMany(alias => queryable
+                    .Where(field => field == alias || field.StartsWith($"{alias}-", StringComparison.Ordinal)))
+                .Distinct()
+                .ToList();
+
+            return selected.Count > 0 ? string.Join(",", selected) : "name";
         }
     }
 }

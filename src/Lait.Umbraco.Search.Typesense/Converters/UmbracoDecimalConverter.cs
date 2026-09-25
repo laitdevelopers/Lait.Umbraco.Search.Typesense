@@ -1,9 +1,11 @@
+using global::Typesense;
+
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Integrations.Search.Typesense.Extensions;
 
 namespace Umbraco.Cms.Integrations.Search.Typesense.Converters
 {
-    public class UmbracoDecimalConverter : ITypesenseIndexValueConverter
+    public class UmbracoDecimalConverter : ITypesenseIndexValueConverter, ITypesenseFieldTypeProvider
     {
         public string Name => Core.Constants.PropertyEditors.Aliases.Decimal;
 
@@ -13,5 +15,7 @@ namespace Umbraco.Cms.Integrations.Search.Typesense.Converters
                     ? result
                     : default)
                 : default;
+
+        public FieldType GetFieldType() => FieldType.Float;
     }
 }

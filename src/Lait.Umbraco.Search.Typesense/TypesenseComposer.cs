@@ -42,7 +42,11 @@ namespace Umbraco.Cms.Integrations.Search.Typesense
                 };
             });
 
-            builder.Services.AddSingleton<ITypesenseIndexService, TypesenseIndexService>();
+            // Scoped rather than singleton: the schema builder reads content types and languages, and
+            // the index service now depends on it. Both are stateless and cheap to construct.
+            builder.Services.AddScoped<ITypesenseSchemaBuilder, TypesenseSchemaBuilder>();
+
+            builder.Services.AddScoped<ITypesenseIndexService, TypesenseIndexService>();
 
             builder.Services.AddSingleton<ITypesenseSearchService<SearchResult<Dictionary<string, object>>>, TypesenseSearchService>();
 
